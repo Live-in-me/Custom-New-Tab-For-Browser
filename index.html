@@ -133,12 +133,15 @@ body::after{
 }
 
 /* Search field */
-.search-box{
+.search-row{
   position:relative;
   z-index:2;
+  width:min(720px, 92%);
+}
 
-  width: min(720px, 92%);
-  padding: 18px 18px;
+.search-box{
+  width:100%;
+  padding: 18px 62px 18px 18px;
 
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.22);
@@ -160,7 +163,6 @@ body::after{
 }
 
 .search-box::placeholder{ color: rgba(255,255,255,0.55); }
-
 .search-box:focus{
   border-color: rgba(0,255,255,0.55);
   transform: translateY(-1px);
@@ -169,6 +171,33 @@ body::after{
     0 0 0 3px rgba(0,255,255,0.10),
     0 16px 40px rgba(0,0,0,0.45);
 }
+
+.image-search-btn{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.08);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.image-search-btn:hover{
+  border-color: rgba(0,255,255,0.55);
+  background: rgba(0,255,255,0.14);
+}
+
+.image-search-btn img{
+  width:20px;
+  height:20px;
+}
+
 
 /* Dock area */
 #shortcuts{
@@ -268,15 +297,20 @@ body::after{
 
 <div class="hero">
   <div class="time" id="timeLabel">--:--</div>
-  <input
-    type="text"
-    class="search-box"
-    placeholder="Hello there! Ready to explore the web?"
-    id="search"
-    autocapitalize="off"
-    autocomplete="off"
-    spellcheck="true"
-  />
+  <div class="search-row">
+    <input
+      type="text"
+      class="search-box"
+      placeholder="Hello there! Ready to explore the web?"
+      id="search"
+      autocapitalize="off"
+      autocomplete="off"
+      spellcheck="true"
+    />
+    <button type="button" class="image-search-btn" id="imageSearchBtn" aria-label="Image search">
+      <img src="Lens.png" alt="Image search" loading="lazy" />
+    </button>
+  </div>
 </div>
 
 <div id="shortcuts">
@@ -318,17 +352,30 @@ updateTime();
 
 /* SEARCH */
 const searchInput = document.getElementById('search');
+const imageSearchBtn = document.getElementById('imageSearchBtn');
+
+function getWebSearchUrl(query) {
+  return query.includes('.') && !query.includes(' ')
+    ? (query.startsWith('http') ? query : 'https://' + query)
+    : 'https://www.google.com/search?q=' + encodeURIComponent(query);
+}
+
+function getImageSearchUrl(query) {
+  return query
+    ? 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query)
+    : 'https://images.google.com/';
+}
+
 searchInput.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const query = searchInput.value.trim();
   if (!query) return;
+  window.location.href = getWebSearchUrl(query);
+});
 
-  const url =
-    query.includes('.') && !query.includes(' ')
-      ? (query.startsWith('http') ? query : 'https://' + query)
-      : 'https://www.google.com/search?q=' + encodeURIComponent(query);
-
-  window.location.href = url;
+imageSearchBtn.addEventListener('click', () => {
+  const query = searchInput.value.trim();
+  window.location.href = getImageSearchUrl(query);
 });
 
 /* --- CONTOURS (marching squares + stitching) --- */
